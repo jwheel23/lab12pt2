@@ -45,7 +45,7 @@ class Server:
         def health() -> str:
             """Return basic health probe result."""
             return "Presidio Anonymizer service is up"
-        
+
         @self.app.route("/genz-preview", methods=["GET"])
         def genz_preview():
             response = {
@@ -71,7 +71,9 @@ class Server:
             for result in analyzer_results
             }
 
-            genz_config = AppEntitiesConvertor.operators_config_from_json(genz_json_config)
+            genz_config = AppEntitiesConvertor.operators_config_from_json(
+                genz_json_config
+                )
 
             result = self.anonymizer.anonymize(
                 text=text,
@@ -140,12 +142,12 @@ class Server:
             return jsonify(error=err.err_msg), 422
 
         @self.app.errorhandler(HTTPException)
-        def http_exception(e):
-            return jsonify(error=e.description), e.code
+        def http_exception(error):
+            return jsonify(error=error.description), error.code
 
         @self.app.errorhandler(Exception)
         def server_error(error):
-            self.logger.error(f"A fatal error occurred during execution: {e}")
+            self.logger.error(f"A fatal error occurred during execution: {error}")
             return jsonify(error="Internal server error"), 500
 
 def create_app(): # noqa
