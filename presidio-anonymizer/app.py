@@ -144,7 +144,7 @@ class Server:
             return jsonify(error=e.description), e.code
 
         @self.app.errorhandler(Exception)
-        def server_error(e):
+        def server_error(error):
             self.logger.error(f"A fatal error occurred during execution: {e}")
             return jsonify(error="Internal server error"), 500
 
