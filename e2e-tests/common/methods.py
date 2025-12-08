@@ -48,3 +48,15 @@ def __get_multipart_form_data(file):
             "image": (file.name, file, "multipart/form-data"),
         }
     return multipart_form_data
+
+def genz(json_body, headers=None):
+    """Send POST request to /genz endpoint."""
+    import requests
+    from common.constants import ANONYMIZER_BASE_URL
+
+    if headers is None:
+        headers = {"Content-Type": "application/json"}
+
+    url = f"{ANONYMIZER_BASE_URL}/genz"
+    response = requests.post(url, json=json_body, headers=headers, timeout=30)
+    return response.status_code, response.json()
