@@ -48,8 +48,3 @@ def __get_multipart_form_data(file):
             "image": (file.name, file, "multipart/form-data"),
         }
     return multipart_form_data
-
-def send_post_request(url: str, json_body: dict, headers=None):
-    if headers is None:
-        headers = {"Content-Type": "application/json"}
-    return requests.post(url, json=json_body, headers=headers, timeout=30)
