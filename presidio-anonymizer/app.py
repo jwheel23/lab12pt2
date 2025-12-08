@@ -1,3 +1,4 @@
+
 """REST API server for anonymizer."""
 
 import logging
@@ -44,6 +45,43 @@ class Server:
         def health() -> str:
             """Return basic health probe result."""
             return "Presidio Anonymizer service is up"
+
+        @self.app.route("/genz-preview", methods=["GET"])
+        def genz_preview():
+            response = {
+        "example": "Call Emily at 577-988-1234",
+        "example output": "Call GOAT at vibe check",
+        "description": "Example output of the genz anonymizer."
+        }
+            return jsonify(response)
+
+        @self.app.route("/genz", methods=["POST"])
+        def genz():
+            content = request.get_json()
+            if not content:
+                raise BadRequest("Invalid request json")
+
+            text = content.get("text", "")
+            analyzer_results = AppEntitiesConvertor.analyzer_results_from_json(
+                content.get("analyzer_results")
+            )
+
+            genz_json_config = {
+            result.entity_type: {"type": "genz"}
+            for result in analyzer_results
+            }
+
+            genz_config = AppEntitiesConvertor.operators_config_from_json(
+                genz_json_config
+                )
+
+            result = self.anonymizer.anonymize(
+                text=text,
+                analyzer_results=analyzer_results,
+                operators=genz_config
+            )
+
+            return Response(result.to_json(), mimetype="application/json")
 
         @self.app.route("/anonymize", methods=["POST"])
         def anonymize() -> Response:
@@ -104,12 +142,12 @@ class Server:
             return jsonify(error=err.err_msg), 422
 
         @self.app.errorhandler(HTTPException)
-        def http_exception(e):
-            return jsonify(error=e.description), e.code
+        def http_exception(error):
+            return jsonify(error=error.description), error.code
 
         @self.app.errorhandler(Exception)
-        def server_error(e):
-            self.logger.error(f"A fatal error occurred during execution: {e}")
+        def server_error(error):
+            self.logger.error(f"A fatal error occurred during execution: {error}")
             return jsonify(error="Internal server error"), 500
 
 def create_app(): # noqa
